@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "James Duran | MERN Stack Developer",
   description: "Portfolio website for James Duran, a MERN Stack Developer with 2 years of experience.",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -29,3 +30,6 @@ export default function RootLayout({
     </html>
   )
 }
+
+
+import './globals.css'
