@@ -34,12 +34,5 @@ export const projects: Project[] = [
     image: "/images/contractorestimatetool.png",
     link: "https://v0-contractor-estimate-tool.vercel.app/",
   },
-  {
-    title: "Portfolio Website",
-    description:
-      "A responsive portfolio website built with Next.js, React, and Tailwind CSS. Features include dark mode, interactive particle animations, and contact form functionality.",
-    techStack: ["Next.js", "React", "Tailwind CSS", "TypeScript"],
-    image: "/images/portfolio-screenshot.png",
-    repo: "https://github.com/azrealjames/portfolio",
-  },
+
 ]
