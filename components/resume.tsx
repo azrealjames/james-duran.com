@@ -12,7 +12,7 @@ export function Resume() {
             Download my resume to learn more about my experience and qualifications.
           </p>
           <Button className="group" size="lg" asChild>
-            <a href="/resume.pdf" download="James_Duran_Resume.pdf" className="flex items-center gap-2">
+            <a href="/api/download-resume" className="flex items-center gap-2">
               <FileDown className="h-5 w-5 group-hover:animate-bounce" />
               Download Resume
             </a>

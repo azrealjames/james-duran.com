@@ -7,6 +7,12 @@ export async function GET() {
     // Path to your resume PDF in the public folder
     const filePath = path.join(process.cwd(), "public", "resume.pdf")
 
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      console.error("Resume file not found at:", filePath)
+      return new NextResponse("Resume not found", { status: 404 })
+    }
+
     // Read the file
     const fileBuffer = fs.readFileSync(filePath)
 
