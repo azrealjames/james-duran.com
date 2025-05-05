@@ -80,7 +80,8 @@ export function Footer() {
                 <Linkedin className="h-4 w-4 md:h-5 md:w-5" aria-hidden="true" />
               </Link>
               <a
-                href="/api/download-resume"
+                href="/resume.pdf"
+                download
                 className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-full p-1"
                 aria-label="Download Resume"
               >
