@@ -1,7 +1,26 @@
+"use client"
+
 import Link from "next/link"
 import { Github, Linkedin, FileText } from "lucide-react"
+import { printToPDF } from "@/utils/print-to-pdf"
+import { useState } from "react"
 
 export function Footer() {
+  const [isPrinting, setIsPrinting] = useState(false)
+
+  const handleDownload = () => {
+    setIsPrinting(true)
+    try {
+      printToPDF("resume-content", "James Duran - Resume")
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      alert("Could not generate PDF. Please try again or contact support.")
+    } finally {
+      // Add a small delay before resetting the state to show the loading indicator
+      setTimeout(() => setIsPrinting(false), 1000)
+    }
+  }
+
   return (
     <footer className="border-t py-8 md:py-12" aria-labelledby="footer-heading">
       <div className="container px-4 md:px-6 mx-auto">
@@ -79,14 +98,14 @@ export function Footer() {
               >
                 <Linkedin className="h-4 w-4 md:h-5 md:w-5" aria-hidden="true" />
               </Link>
-              <a
-                href="/resume.pdf"
-                download
+              <button
+                onClick={handleDownload}
+                disabled={isPrinting}
                 className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-full p-1"
                 aria-label="Download Resume"
               >
-                <FileText className="h-4 w-4 md:h-5 md:w-5" aria-hidden="true" />
-              </a>
+                <FileText className={`h-4 w-4 md:h-5 md:w-5 ${isPrinting ? "animate-pulse" : ""}`} aria-hidden="true" />
+              </button>
             </div>
           </div>
         </div>

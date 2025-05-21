@@ -1,7 +1,26 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { FileDown } from "lucide-react"
+import { printToPDF } from "@/utils/print-to-pdf"
+import { useState } from "react"
 
 export function Resume() {
+  const [isPrinting, setIsPrinting] = useState(false)
+
+  const handleDownload = () => {
+    setIsPrinting(true)
+    try {
+      printToPDF("resume-content", "James Duran - Resume")
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      alert("Could not generate PDF. Please try again or contact support.")
+    } finally {
+      // Add a small delay before resetting the state to show the loading indicator
+      setTimeout(() => setIsPrinting(false), 1000)
+    }
+  }
+
   return (
     <section id="resume" className="py-20">
       <div className="container px-4 md:px-6 mx-auto">
@@ -11,15 +30,15 @@ export function Resume() {
           <p className="text-muted-foreground mb-8">
             Download my resume to learn more about my experience and qualifications.
           </p>
-          <Button className="group" size="lg" asChild>
-            <a href="/resume.pdf" download className="flex items-center gap-2">
-              <FileDown className="h-5 w-5 group-hover:animate-bounce" />
-              Download Resume
-            </a>
+          <Button className="group download-btn-container" size="lg" onClick={handleDownload} disabled={isPrinting}>
+            <span className="flex items-center gap-2">
+              <FileDown className={`h-5 w-5 ${isPrinting ? "animate-pulse" : "group-hover:animate-bounce"}`} />
+              {isPrinting ? "Preparing PDF..." : "Download Resume"}
+            </span>
           </Button>
         </div>
 
-        <div className="max-w-4xl mx-auto bg-card p-8 rounded-lg shadow-lg border">
+        <div id="resume-content" className="max-w-4xl mx-auto bg-card p-8 rounded-lg shadow-lg border">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold">James Duran</h1>
             <p className="text-muted-foreground mt-2">United States | 720-251-0866 | azrealjames@gmail.com</p>
@@ -161,25 +180,6 @@ export function Resume() {
                 </ul>
               </div>
             </div>
-
-            <div>
-              <h2 className="text-xl font-bold border-b pb-2 mb-4">Projects</h2>
-
-              <div className="mb-4">
-                <h3 className="font-bold text-lg">AI Chatbot Development</h3>
-                <p className="text-muted-foreground mt-1">
-                  Contributed to a chatbot project by improving conversational responses and refining JavaScript logic
-                  for better user interaction.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-bold text-lg">Portfolio Website</h3>
-                <p className="text-muted-foreground mt-1">
-                  Built a responsive portfolio using React, Next.js, and Tailwind CSS to showcase web projects and
-                  skills.
-                </p>
-              </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,44 @@
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  #resume-content {
+    background-color: white !important;
+    color: black !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .download-btn-container {
+    display: none !important;
+  }
+
+  a {
+    color: #3b82f6 !important;
+    text-decoration: none !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: black !important;
+    page-break-after: avoid !important;
+  }
+
+  ul,
+  ol {
+    page-break-inside: avoid !important;
+  }
+
+  .text-muted-foreground {
+    color: #4b5563 !important;
+  }
+}

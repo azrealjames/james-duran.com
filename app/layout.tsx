@@ -1,5 +1,6 @@
 import type React from "react"
 import "@/app/globals.css"
+import "@/app/print.css"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 
