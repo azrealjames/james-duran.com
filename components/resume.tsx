@@ -180,6 +180,25 @@ export function Resume() {
                 </ul>
               </div>
             </div>
+
+            <div>
+              <h2 className="text-xl font-bold border-b pb-2 mb-4">Projects</h2>
+
+              <div className="mb-4">
+                <h3 className="font-bold text-lg">AI Chatbot Development</h3>
+                <p className="text-muted-foreground mt-1">
+                  Contributed to a chatbot project by improving conversational responses and refining JavaScript logic
+                  for better user interaction.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-lg">Portfolio Website</h3>
+                <p className="text-muted-foreground mt-1">
+                  Built a responsive portfolio using React, Next.js, and Tailwind CSS to showcase web projects and
+                  skills.
+                </p>
+              </div>
             </div>
           </div>
         </div>
