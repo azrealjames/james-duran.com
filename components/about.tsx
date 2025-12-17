@@ -23,23 +23,10 @@ export function About() {
               expanding my knowledge through online courses and tutorials.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 bg-background/50 rounded-lg p-6 border">
-              <div>
-                <h3 className="font-medium mb-2 text-primary">Name:</h3>
-                <p className="text-muted-foreground">James Duran</p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2 text-primary">Email:</h3>
-                <p className="text-muted-foreground">azrealjames@gmail.com</p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2 text-primary">From:</h3>
-                <p className="text-muted-foreground">United States</p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2 text-primary">Freelance:</h3>
-                <p className="text-primary font-medium">Available</p>
-              </div>
+            <div className="flex justify-center mt-8">
+              <span className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium border border-primary/20">
+                Currently Available for Freelance Projects
+              </span>
             </div>
           </div>
         </div>

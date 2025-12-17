@@ -11,9 +11,27 @@ export function Hero() {
   const phrases = ["MERN Stack Developer", "Frontend Specialist", "React Developer", "Freelancer"]
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const mousePosition = useRef({ x: 0, y: 0 })
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+    setPrefersReducedMotion(mediaQuery.matches)
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches)
+    }
+
+    mediaQuery.addEventListener("change", handleChange)
+    return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [])
 
   // Typing effect
   useEffect(() => {
+    if (prefersReducedMotion) {
+      setTypedText(phrases[currentPhraseIndex])
+      return
+    }
+
     const currentPhrase = phrases[currentPhraseIndex]
     let currentIndex = 0
     let isDeleting = false
@@ -47,10 +65,12 @@ export function Hero() {
     }, typingSpeed)
 
     return () => clearInterval(typingInterval)
-  }, [currentPhraseIndex])
+  }, [currentPhraseIndex, prefersReducedMotion])
 
   // Particle animation
   useEffect(() => {
+    if (prefersReducedMotion) return
+
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -186,7 +206,7 @@ export function Hero() {
       window.removeEventListener("resize", setCanvasDimensions)
       window.removeEventListener("mousemove", handleMouseMove)
     }
-  }, [])
+  }, [prefersReducedMotion])
 
   return (
     <section className="relative min-h-screen flex flex-col" aria-labelledby="hero-heading">

@@ -1,11 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Mail, Phone, MapPin, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ export function Contact() {
     email: "",
     subject: "",
     message: "",
+    _honeypot: "",
   })
 
   const [formStatus, setFormStatus] = useState<{
@@ -22,27 +23,6 @@ export function Contact() {
   } | null>(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [emailJSLoaded, setEmailJSLoaded] = useState(false)
-
-  // Load EmailJS script
-  useEffect(() => {
-    const script = document.createElement("script")
-    script.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
-    script.async = true
-    script.onload = () => {
-      // Initialize EmailJS with your user ID
-      // @ts-ignore
-      window.emailjs.init("Yd-Ck-Oe-Yd-Ck-Oe") // Replace with your actual EmailJS user ID
-      setEmailJSLoaded(true)
-    }
-    document.body.appendChild(script)
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
-      }
-    }
-  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -52,11 +32,12 @@ export function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!emailJSLoaded) {
+    if (formData._honeypot) {
+      console.log("[v0] Spam detected via honeypot")
       setFormStatus({
         submitted: true,
         success: false,
-        message: "Email service is still loading. Please try again in a moment.",
+        message: "Invalid submission detected.",
       })
       return
     }
@@ -64,20 +45,18 @@ export function Contact() {
     setIsSubmitting(true)
 
     try {
-      // Use FormData for direct form submission as a fallback
       if (typeof window !== "undefined" && window.location) {
         const form = e.target as HTMLFormElement
         const formAction = `https://formsubmit.co/${encodeURIComponent("azrealjames@gmail.com")}`
 
-        // Create a hidden form to submit
         const hiddenForm = document.createElement("form")
         hiddenForm.method = "POST"
         hiddenForm.action = formAction
         hiddenForm.style.display = "none"
 
-        // Add form data
+        // Add form data (excluding honeypot)
         for (const key in formData) {
-          if (Object.prototype.hasOwnProperty.call(formData, key)) {
+          if (Object.prototype.hasOwnProperty.call(formData, key) && key !== "_honeypot") {
             const input = document.createElement("input")
             input.type = "hidden"
             input.name = key
@@ -87,27 +66,27 @@ export function Contact() {
           }
         }
 
-        // Add success page redirect
         const redirectInput = document.createElement("input")
         redirectInput.type = "hidden"
         redirectInput.name = "_next"
         redirectInput.value = window.location.href
         hiddenForm.appendChild(redirectInput)
 
-        // Add subject
         const subjectInput = document.createElement("input")
         subjectInput.type = "hidden"
         subjectInput.name = "_subject"
         subjectInput.value = `Portfolio Contact: ${formData.subject}`
         hiddenForm.appendChild(subjectInput)
 
-        // Append form to body
-        document.body.appendChild(hiddenForm)
+        const captchaInput = document.createElement("input")
+        captchaInput.type = "hidden"
+        captchaInput.name = "_captcha"
+        captchaInput.value = "true"
+        hiddenForm.appendChild(captchaInput)
 
-        // Submit form
+        document.body.appendChild(hiddenForm)
         hiddenForm.submit()
 
-        // Show success message
         setFormStatus({
           submitted: true,
           success: true,
@@ -120,6 +99,7 @@ export function Contact() {
           email: "",
           subject: "",
           message: "",
+          _honeypot: "",
         })
       } else {
         throw new Error("Browser environment not available")
@@ -129,7 +109,7 @@ export function Contact() {
       setFormStatus({
         submitted: true,
         success: false,
-        message: "Failed to send message. Please try again later or email me directly.",
+        message: "Failed to send message. Please try again later.",
       })
     } finally {
       setIsSubmitting(false)
@@ -149,113 +129,41 @@ export function Contact() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-1">
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-full text-primary" aria-hidden="true">
-                  <Mail className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold mb-1">Email</h3>
-                  <p className="text-muted-foreground">
-                    <a
-                      href="mailto:azrealjames@gmail.com"
-                      className="hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-sm"
-                    >
-                      azrealjames@gmail.com
-                    </a>
-                  </p>
-                </div>
-              </div>
+        <div className="max-w-2xl mx-auto">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6"
+            aria-label="Contact form"
+            action="https://formsubmit.co/azrealjames@gmail.com"
+            method="POST"
+          >
+            {/* Hidden fields for FormSubmit.co */}
+            <input type="hidden" name="_subject" value="Portfolio Contact Form Submission" />
+            <input type="hidden" name="_next" value={typeof window !== "undefined" ? window.location.href : ""} />
+            <input type="hidden" name="_captcha" value="true" />
 
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-full text-primary" aria-hidden="true">
-                  <Phone className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold mb-1">Phone</h3>
-                  <p className="text-muted-foreground">
-                    <a
-                      href="tel:+17202510866"
-                      className="hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-sm"
-                    >
-                      (720) 251-0866
-                    </a>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-full text-primary" aria-hidden="true">
-                  <MapPin className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold mb-1">Location</h3>
-                  <p className="text-muted-foreground">United States</p>
-                </div>
-              </div>
+            <div className="sr-only" aria-hidden="true">
+              <label htmlFor="honeypot">Leave this field empty</label>
+              <Input
+                id="honeypot"
+                name="_honeypot"
+                value={formData._honeypot}
+                onChange={handleChange}
+                tabIndex={-1}
+                autoComplete="off"
+              />
             </div>
-          </div>
 
-          <div className="lg:col-span-2">
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6"
-              aria-label="Contact form"
-              action="https://formsubmit.co/azrealjames@gmail.com"
-              method="POST"
-            >
-              {/* Hidden fields for FormSubmit.co */}
-              <input type="hidden" name="_subject" value="Portfolio Contact Form Submission" />
-              <input type="hidden" name="_next" value={typeof window !== "undefined" ? window.location.href : ""} />
-              <input type="hidden" name="_captcha" value="false" />
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium sr-only">
-                    Your Name
-                  </label>
-                  <Input
-                    id="name"
-                    placeholder="Your Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    aria-required="true"
-                    className="focus:ring-2 focus:ring-primary"
-                    disabled={isSubmitting}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium sr-only">
-                    Your Email
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Your Email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    aria-required="true"
-                    className="focus:ring-2 focus:ring-primary"
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label htmlFor="subject" className="text-sm font-medium sr-only">
-                  Subject
+                <label htmlFor="name" className="text-sm font-medium sr-only">
+                  Your Name
                 </label>
                 <Input
-                  id="subject"
-                  placeholder="Subject"
-                  name="subject"
-                  value={formData.subject}
+                  id="name"
+                  placeholder="Your Name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
                   required
                   aria-required="true"
@@ -263,61 +171,87 @@ export function Contact() {
                   disabled={isSubmitting}
                 />
               </div>
-
               <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-medium sr-only">
-                  Your Message
+                <label htmlFor="email" className="text-sm font-medium sr-only">
+                  Your Email
                 </label>
-                <Textarea
-                  id="message"
-                  placeholder="Your Message"
-                  className="min-h-[150px] focus:ring-2 focus:ring-primary"
-                  name="message"
-                  value={formData.message}
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Your Email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleChange}
                   required
                   aria-required="true"
+                  className="focus:ring-2 focus:ring-primary"
                   disabled={isSubmitting}
                 />
               </div>
+            </div>
 
-              <div>
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full sm:w-auto focus:ring-2 focus:ring-primary"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                      <span>Sending...</span>
-                    </>
-                  ) : (
-                    "Send Message"
-                  )}
-                </Button>
+            <div className="space-y-2">
+              <label htmlFor="subject" className="text-sm font-medium sr-only">
+                Subject
+              </label>
+              <Input
+                id="subject"
+                placeholder="Subject"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                required
+                aria-required="true"
+                className="focus:ring-2 focus:ring-primary"
+                disabled={isSubmitting}
+              />
+            </div>
 
-                {formStatus && (
-                  <div
-                    className={`mt-4 p-3 rounded-md ${formStatus.success ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
-                    role="alert"
-                    aria-live="polite"
-                  >
-                    <p className="font-medium">{formStatus.message}</p>
-                    {!formStatus.success && (
-                      <p className="text-sm mt-2">
-                        If the issue persists, please email me directly at{" "}
-                        <a href="mailto:azrealjames@gmail.com" className="underline hover:no-underline">
-                          azrealjames@gmail.com
-                        </a>
-                      </p>
-                    )}
-                  </div>
+            <div className="space-y-2">
+              <label htmlFor="message" className="text-sm font-medium sr-only">
+                Your Message
+              </label>
+              <Textarea
+                id="message"
+                placeholder="Your Message"
+                className="min-h-[150px] focus:ring-2 focus:ring-primary"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                required
+                aria-required="true"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full sm:w-auto focus:ring-2 focus:ring-primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  "Send Message"
                 )}
-              </div>
-            </form>
-          </div>
+              </Button>
+
+              {formStatus && (
+                <div
+                  className={`mt-4 p-3 rounded-md ${formStatus.success ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
+                  role="alert"
+                  aria-live="polite"
+                >
+                  <p className="font-medium">{formStatus.message}</p>
+                </div>
+              )}
+            </div>
+          </form>
         </div>
       </div>
     </section>
