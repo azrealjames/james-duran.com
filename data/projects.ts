@@ -23,8 +23,8 @@ export const projects: Project[] = [
     description:
       "A clean, mobile-first landing page designed to help Hovey Painting collect leads, showcase their services, and convert visitors with clear CTAs.",
     techStack: ["Next.js", "Tailwind CSS"],
-    image: "/images/hoveypainting.jpg",
-    link: "https://vercel.com/james-projects-d3932d6d/v0-hovey-painting-landing-page",
+    image: "/images/hoveypainting.png",
+    link: "https://www.hoveypainting.com",
   },
   {
     title: "Contractor Estimate Tool",
@@ -35,12 +35,11 @@ export const projects: Project[] = [
     link: "https://v0-contractor-estimate-tool.vercel.app/",
   },
   {
-  title: "Gig Analyzer App",
-  description:
-    "An Android overlay app that helps rideshare drivers make smarter ride decisions. Displays a floating button to classify incoming ride offers as Green ($1.20+/mi), Yellow ($1.00–$1.19/mi), or Red (<$1.00/mi) based on real-time trip data.",
-  techStack: ["React Native", "Kotlin (Overlay Module)", "Android Accessibility API"],
-  image: "/uber-overlay.png",
-  repo: "https://github.com/yourusername/uber-overlay-app"
-}
-
+    title: "Gig Analyzer App",
+    description:
+      "An Android overlay app that helps rideshare drivers make smarter ride decisions. Displays a floating button to classify incoming ride offers as Green ($1.20+/mi), Yellow ($1.00–$1.19/mi), or Red (<$1.00/mi) based on real-time trip data.",
+    techStack: ["React Native", "Kotlin (Overlay Module)", "Android Accessibility API"],
+    image: "/uber-overlay.png",
+    repo: "https://github.com/yourusername/uber-overlay-app",
+  },
 ]
