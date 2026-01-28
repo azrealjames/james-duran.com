@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2 } from "lucide-react"
+import { Loader2, CheckCircle, AlertCircle } from "lucide-react"
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -16,6 +16,8 @@ export function Contact() {
     _honeypot: "",
   })
 
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
   const [formStatus, setFormStatus] = useState<{
     submitted: boolean
     success: boolean
@@ -24,16 +26,56 @@ export function Contact() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required"
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters"
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required"
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = "Please enter a valid email address"
+    }
+
+    if (!formData.subject.trim()) {
+      newErrors.subject = "Subject is required"
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = "Message is required"
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = "Message must be at least 10 characters"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Reset status
+    setFormStatus(null)
+
     if (formData._honeypot) {
-      console.log("[v0] Spam detected via honeypot")
       setFormStatus({
         submitted: true,
         success: false,
@@ -42,11 +84,15 @@ export function Contact() {
       return
     }
 
+    // Validate form
+    if (!validateForm()) {
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
       if (typeof window !== "undefined" && window.location) {
-        const form = e.target as HTMLFormElement
         const formAction = `https://formsubmit.co/${encodeURIComponent("azrealjames@gmail.com")}`
 
         const hiddenForm = document.createElement("form")
@@ -90,7 +136,7 @@ export function Contact() {
         setFormStatus({
           submitted: true,
           success: true,
-          message: "Your message has been sent successfully!",
+          message: "Thank you for reaching out! I typically respond within 24 hours.",
         })
 
         // Reset form
@@ -101,6 +147,7 @@ export function Contact() {
           message: "",
           _honeypot: "",
         })
+        setErrors({})
       } else {
         throw new Error("Browser environment not available")
       }
@@ -109,7 +156,7 @@ export function Contact() {
       setFormStatus({
         submitted: true,
         success: false,
-        message: "Failed to send message. Please try again later.",
+        message: "Failed to send message. Please try again or email me directly at azrealjames@gmail.com",
       })
     } finally {
       setIsSubmitting(false)
@@ -167,9 +214,17 @@ export function Contact() {
                   onChange={handleChange}
                   required
                   aria-required="true"
-                  className="focus:ring-2 focus:ring-primary"
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? "name-error" : undefined}
+                  className={`focus:ring-2 focus:ring-primary ${errors.name ? "border-red-500" : ""}`}
                   disabled={isSubmitting}
                 />
+                {errors.name && (
+                  <p id="name-error" className="text-red-500 text-sm flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.name}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium sr-only">
@@ -184,9 +239,17 @@ export function Contact() {
                   onChange={handleChange}
                   required
                   aria-required="true"
-                  className="focus:ring-2 focus:ring-primary"
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  className={`focus:ring-2 focus:ring-primary ${errors.email ? "border-red-500" : ""}`}
                   disabled={isSubmitting}
                 />
+                {errors.email && (
+                  <p id="email-error" className="text-red-500 text-sm flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.email}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -202,9 +265,17 @@ export function Contact() {
                 onChange={handleChange}
                 required
                 aria-required="true"
-                className="focus:ring-2 focus:ring-primary"
+                aria-invalid={!!errors.subject}
+                aria-describedby={errors.subject ? "subject-error" : undefined}
+                className={`focus:ring-2 focus:ring-primary ${errors.subject ? "border-red-500" : ""}`}
                 disabled={isSubmitting}
               />
+              {errors.subject && (
+                <p id="subject-error" className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.subject}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -213,15 +284,23 @@ export function Contact() {
               </label>
               <Textarea
                 id="message"
-                placeholder="Your Message"
-                className="min-h-[150px] focus:ring-2 focus:ring-primary"
+                placeholder="Your Message (min. 10 characters)"
+                className={`min-h-[150px] focus:ring-2 focus:ring-primary ${errors.message ? "border-red-500" : ""}`}
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
                 required
                 aria-required="true"
+                aria-invalid={!!errors.message}
+                aria-describedby={errors.message ? "message-error" : undefined}
                 disabled={isSubmitting}
               />
+              {errors.message && (
+                <p id="message-error" className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -243,11 +322,19 @@ export function Contact() {
 
               {formStatus && (
                 <div
-                  className={`mt-4 p-3 rounded-md ${formStatus.success ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
+                  className={`mt-4 p-4 rounded-md flex items-start gap-3 ${formStatus.success ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
                   role="alert"
                   aria-live="polite"
                 >
-                  <p className="font-medium">{formStatus.message}</p>
+                  {formStatus.success ? (
+                    <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                  )}
+                  <div>
+                    <p className="font-medium">{formStatus.success ? "Message Sent!" : "Error"}</p>
+                    <p className="text-sm mt-1">{formStatus.message}</p>
+                  </div>
                 </div>
               )}
             </div>

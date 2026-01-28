@@ -8,7 +8,7 @@ import Link from "next/link"
 export function Hero() {
   const [typedText, setTypedText] = useState("")
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
-  const phrases = ["MERN Stack Developer", "Frontend Specialist", "React Developer", "Freelancer"]
+  const phrases = ["Building Scalable Web Solutions", "For Small Businesses & Startups", "React & Next.js Expert", "Available for Projects"]
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const mousePosition = useRef({ x: 0, y: 0 })
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
@@ -258,9 +258,9 @@ export function Hero() {
             </p>
           </div>
 
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            Passionate about building <span className="text-primary font-medium">modern web applications</span> with the
-            MERN stack. Available for <span className="text-primary font-medium">freelance projects</span>.
+          <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
+            I help <span className="text-primary font-medium">small businesses and startups</span> build fast, 
+            responsive web applications that drive results. Let's bring your vision to life.
           </p>
 
           {/* Social links */}

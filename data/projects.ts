@@ -16,7 +16,8 @@ export const projects: Project[] = [
       "A web app that lets users enter any URL and see how its meta tags appear on Google and social platforms, with feedback on SEO optimization. Great for marketers and developers.",
     techStack: ["Next.js", "TypeScript", "OpenGraph"],
     image: "/images/seo-analyzer.png",
-    repo: "https://v0-seo-tag-analyzer-app.vercel.app/",
+    link: "https://v0-seo-tag-analyzer-app.vercel.app/",
+    repo: "https://github.com/azrealjames/seo-meta-tag-analyzer",
   },
   {
     title: "Hovey Painting Landing Page",
@@ -25,6 +26,7 @@ export const projects: Project[] = [
     techStack: ["Next.js", "Tailwind CSS"],
     image: "/images/hoveypainting.png",
     link: "https://www.hoveypainting.com",
+    repo: "https://github.com/azrealjames/hovey-painting",
   },
   {
     title: "Contractor Estimate Tool",
@@ -33,6 +35,6 @@ export const projects: Project[] = [
     techStack: ["Next.js", "Tailwind CSS", "TypeScript"],
     image: "/images/contractorestimatetool.png",
     link: "https://v0-contractor-estimate-tool.vercel.app/",
+    repo: "https://github.com/azrealjames/contractor-estimate-tool",
   },
-
 ]
