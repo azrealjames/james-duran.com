@@ -2,23 +2,23 @@
 
 import { useEffect, useState, useRef } from "react"
 import { Navbar } from "@/components/navbar"
-import { Github, Linkedin, Mail, ChevronRight } from "lucide-react"
+import { Github, Linkedin, Mail } from "lucide-react"
 import Link from "next/link"
 
 export function Hero() {
   const [typedText, setTypedText] = useState("")
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
-  const phrases = ["Building Scalable Web Solutions", "For Small Businesses & Startups", "React & Next.js Expert", "System Status: Online"]
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [reducedMotion, setReducedMotion] = useState(false)
+  const phrases = ["Building Scalable Web Solutions", "For Small Businesses & Startups", "React & Next.js Expert", "Available for Projects"]
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const mousePosition = useRef({ x: 0, y: 0 })
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
-    setReducedMotion(mediaQuery.matches)
+    setPrefersReducedMotion(mediaQuery.matches)
 
     const handleChange = (e: MediaQueryListEvent) => {
-      setReducedMotion(e.matches)
+      setPrefersReducedMotion(e.matches)
     }
 
     mediaQuery.addEventListener("change", handleChange)
@@ -27,38 +27,49 @@ export function Hero() {
 
   // Typing effect
   useEffect(() => {
-    if (reducedMotion) {
+    if (prefersReducedMotion) {
       setTypedText(phrases[currentPhraseIndex])
       return
     }
 
     const currentPhrase = phrases[currentPhraseIndex]
-    const typingSpeed = isDeleting ? 30 : 80
-    const pauseTime = 2000
+    let currentIndex = 0
+    let isDeleting = false
+    let typingSpeed = 100
 
-    const timeout = setTimeout(() => {
-      if (!isDeleting) {
-        if (typedText.length < currentPhrase.length) {
-          setTypedText(currentPhrase.substring(0, typedText.length + 1))
-        } else {
-          setTimeout(() => setIsDeleting(true), pauseTime)
-        }
-      } else {
-        if (typedText.length > 0) {
-          setTypedText(currentPhrase.substring(0, typedText.length - 1))
-        } else {
-          setIsDeleting(false)
-          setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length)
-        }
+    const typingInterval = setInterval(() => {
+      // Typing
+      if (!isDeleting && currentIndex <= currentPhrase.length) {
+        setTypedText(currentPhrase.slice(0, currentIndex))
+        currentIndex++
+        typingSpeed = 100
+      }
+      // Deleting
+      else if (isDeleting && currentIndex >= 0) {
+        setTypedText(currentPhrase.slice(0, currentIndex))
+        currentIndex--
+        typingSpeed = 50
+      }
+
+      // Switch to deleting mode when typed full phrase
+      if (!isDeleting && currentIndex > currentPhrase.length) {
+        isDeleting = true
+        typingSpeed = 1000 // Pause before deleting
+      }
+
+      // Switch to next phrase when deleted
+      if (isDeleting && currentIndex === 0) {
+        isDeleting = false
+        setCurrentPhraseIndex((prevIndex) => (prevIndex + 1) % phrases.length)
       }
     }, typingSpeed)
 
-    return () => clearTimeout(timeout)
-  }, [typedText, isDeleting, currentPhraseIndex, reducedMotion, phrases])
+    return () => clearInterval(typingInterval)
+  }, [currentPhraseIndex, prefersReducedMotion])
 
-  // Grid animation
+  // Particle animation
   useEffect(() => {
-    if (reducedMotion) return
+    if (prefersReducedMotion) return
 
     const canvas = canvasRef.current
     if (!canvas) return
@@ -66,181 +77,239 @@ export function Hero() {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    const resizeCanvas = () => {
+    // Set canvas dimensions
+    const setCanvasDimensions = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
     }
-    resizeCanvas()
-    window.addEventListener("resize", resizeCanvas)
 
-    const gridSize = 60
-    let offset = 0
-    let animationId: number
+    setCanvasDimensions()
+    window.addEventListener("resize", setCanvasDimensions)
 
-    const drawGrid = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
-      ctx.strokeStyle = "hsla(185, 100%, 50%, 0.06)"
-      ctx.lineWidth = 1
-
-      // Vertical lines
-      for (let x = 0; x <= canvas.width; x += gridSize) {
-        ctx.beginPath()
-        ctx.moveTo(x, 0)
-        ctx.lineTo(x, canvas.height)
-        ctx.stroke()
+    // Track mouse position
+    const handleMouseMove = (e: MouseEvent) => {
+      mousePosition.current = {
+        x: e.clientX,
+        y: e.clientY,
       }
-
-      // Horizontal lines
-      for (let y = 0; y <= canvas.height; y += gridSize) {
-        ctx.beginPath()
-        ctx.moveTo(0, y)
-        ctx.lineTo(canvas.width, y)
-        ctx.stroke()
-      }
-
-      // Data streams
-      ctx.lineWidth = 2
-      for (let i = 0; i < 5; i++) {
-        const x = (canvas.width / 6) * (i + 1)
-        const streamOffset = (offset * 2 + i * 150) % (canvas.height + 200) - 100
-        
-        const gradient = ctx.createLinearGradient(x, streamOffset - 100, x, streamOffset)
-        gradient.addColorStop(0, "hsla(185, 100%, 50%, 0)")
-        gradient.addColorStop(1, "hsla(185, 100%, 50%, 0.4)")
-        
-        ctx.strokeStyle = gradient
-        ctx.beginPath()
-        ctx.moveTo(x, streamOffset - 100)
-        ctx.lineTo(x, streamOffset)
-        ctx.stroke()
-      }
-
-      offset += 1
-      animationId = requestAnimationFrame(drawGrid)
     }
 
-    drawGrid()
+    window.addEventListener("mousemove", handleMouseMove)
+
+    // Create particles
+    const particlesArray: Particle[] = []
+    const numberOfParticles = 100
+
+    class Particle {
+      x: number
+      y: number
+      size: number
+      speedX: number
+      speedY: number
+      color: string
+
+      constructor() {
+        this.x = Math.random() * canvas.width
+        this.y = Math.random() * canvas.height
+        this.size = Math.random() * 3 + 1
+        this.speedX = (Math.random() - 0.5) * 0.5
+        this.speedY = (Math.random() - 0.5) * 0.5
+        this.color = `hsla(217, 91%, 60%, ${Math.random() * 0.3})`
+      }
+
+      update() {
+        // Move particles
+        this.x += this.speedX
+        this.y += this.speedY
+
+        // Wrap around edges
+        if (this.x > canvas.width) this.x = 0
+        if (this.x < 0) this.x = canvas.width
+        if (this.y > canvas.height) this.y = 0
+        if (this.y < 0) this.y = canvas.height
+
+        // React to mouse (subtle attraction)
+        const dx = mousePosition.current.x - this.x
+        const dy = mousePosition.current.y - this.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        if (distance < 100) {
+          const angle = Math.atan2(dy, dx)
+          this.speedX += Math.cos(angle) * 0.01
+          this.speedY += Math.sin(angle) * 0.01
+        }
+
+        // Limit speed
+        const maxSpeed = 1
+        const currentSpeed = Math.sqrt(this.speedX * this.speedX + this.speedY * this.speedY)
+        if (currentSpeed > maxSpeed) {
+          this.speedX = (this.speedX / currentSpeed) * maxSpeed
+          this.speedY = (this.speedY / currentSpeed) * maxSpeed
+        }
+      }
+
+      draw() {
+        if (!ctx) return
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+        ctx.fillStyle = this.color
+        ctx.fill()
+      }
+    }
+
+    // Initialize particles
+    for (let i = 0; i < numberOfParticles; i++) {
+      particlesArray.push(new Particle())
+    }
+
+    // Animation loop
+    const animate = () => {
+      if (!ctx) return
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Update and draw particles
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update()
+        particlesArray[i].draw()
+      }
+
+      // Draw connections
+      connectParticles()
+
+      requestAnimationFrame(animate)
+    }
+
+    // Connect nearby particles with lines
+    const connectParticles = () => {
+      if (!ctx) return
+      for (let i = 0; i < particlesArray.length; i++) {
+        for (let j = i + 1; j < particlesArray.length; j++) {
+          const dx = particlesArray[i].x - particlesArray[j].x
+          const dy = particlesArray[i].y - particlesArray[j].y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          if (distance < 100) {
+            ctx.beginPath()
+            ctx.strokeStyle = `hsla(217, 91%, 60%, ${0.1 * (1 - distance / 100)})`
+            ctx.lineWidth = 0.5
+            ctx.moveTo(particlesArray[i].x, particlesArray[i].y)
+            ctx.lineTo(particlesArray[j].x, particlesArray[j].y)
+            ctx.stroke()
+          }
+        }
+      }
+    }
+
+    animate()
 
     return () => {
-      window.removeEventListener("resize", resizeCanvas)
-      cancelAnimationFrame(animationId)
+      window.removeEventListener("resize", setCanvasDimensions)
+      window.removeEventListener("mousemove", handleMouseMove)
     }
-  }, [reducedMotion])
+  }, [prefersReducedMotion])
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden">
-      {/* Animated Grid Background */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 z-0"
+    <section className="relative min-h-screen flex flex-col" aria-labelledby="hero-heading">
+      <Navbar />
+
+      {/* Canvas for particle animation - decorative only */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0" aria-hidden="true" />
+
+      {/* Hero background effects - decorative only */}
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-50 animate-pulse"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-50 animate-pulse"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute top-1/3 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-2xl opacity-30 animate-pulse"
+        style={{ animationDelay: "1s" }}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-primary/5 rounded-full blur-2xl opacity-30 animate-pulse"
+        style={{ animationDelay: "2s" }}
         aria-hidden="true"
       />
 
-      {/* Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background z-[1]" aria-hidden="true" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[hsl(185_100%_50%/0.1)] rounded-full blur-[100px] z-[1]" aria-hidden="true" />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[hsl(210_100%_50%/0.1)] rounded-full blur-[80px] z-[1]" aria-hidden="true" />
-
-      <Navbar />
-
-      <div className="flex-1 flex items-center justify-center relative z-10 px-4">
-        <div className="max-w-5xl mx-auto text-center">
-          {/* System Status Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel mb-8">
-            <span className="status-dot" />
-            <span className="text-xs uppercase tracking-wider text-[hsl(150_100%_60%)]">Global Node Access: Active</span>
-          </div>
-
-          {/* Main Title */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-4">
-            <span className="neon-text">JAMES</span>{" "}
-            <span className="text-foreground">DURAN</span>
+      <div className="flex-1 flex flex-col justify-center items-center text-center px-4 md:px-6 z-10">
+        <div className="max-w-3xl mx-auto">
+          <h1 id="hero-heading" className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">
+            Hi, I'm{" "}
+            <span className="text-primary relative inline-block">
+              James
+              <span className="absolute bottom-0 left-0 w-full h-1 bg-primary opacity-70" aria-hidden="true"></span>
+            </span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="text-sm md:text-base uppercase tracking-[0.3em] text-muted-foreground mb-8">
-            Ultra-Futuristic Web & Systems Architect | Est. 2023
-          </p>
-
-          {/* Typing Effect */}
-          <div className="h-12 flex items-center justify-center mb-8">
-            <span className="text-xl md:text-2xl text-[hsl(185_100%_60%)] font-mono">
-              {typedText}
-              <span className="typing-cursor" />
-            </span>
+          <div className="h-12 mb-4" aria-live="polite">
+            <p className="text-xl md:text-2xl text-muted-foreground">
+              <span className="text-primary">{typedText}</span>
+              <span className="animate-blink" aria-hidden="true">
+                |
+              </span>
+            </p>
           </div>
 
-          {/* Description */}
-          <p className="text-muted-foreground mb-10 max-w-2xl mx-auto text-lg">
-            I help <span className="text-[hsl(185_100%_60%)]">small businesses and startups</span> build fast, 
+          <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
+            I help <span className="text-primary font-medium">small businesses and startups</span> build fast, 
             responsive web applications that drive results. Let's bring your vision to life.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link href="#contact" className="cyber-button">
-              <span className="flex items-center gap-2">
-                Initialize Contact
-                <ChevronRight className="h-4 w-4" />
-              </span>
-            </Link>
-            <Link href="#projects" className="cyber-button-outline">
-              <span className="flex items-center gap-2">
-                View Projects
-                <ChevronRight className="h-4 w-4" />
-              </span>
-            </Link>
-          </div>
-
-          {/* Social Links */}
-          <div className="flex items-center justify-center gap-6">
-            <a
+          {/* Social links */}
+          <div className="flex justify-center gap-4 mb-8">
+            <Link
               href="https://github.com/azrealjames"
+              className="bg-background/80 p-3 rounded-full hover:bg-primary/10 transition-colors border border-border hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
               target="_blank"
               rel="noopener noreferrer"
-              className="tech-icon group"
               aria-label="GitHub Profile"
             >
-              <Github className="h-5 w-5 text-muted-foreground group-hover:text-[hsl(185_100%_60%)] transition-colors" />
-            </a>
-            <a
+              <Github className="h-5 w-5" aria-hidden="true" />
+            </Link>
+            <Link
               href="https://www.linkedin.com/in/james-duran-b1061830/"
+              className="bg-background/80 p-3 rounded-full hover:bg-primary/10 transition-colors border border-border hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
               target="_blank"
               rel="noopener noreferrer"
-              className="tech-icon group"
               aria-label="LinkedIn Profile"
             >
-              <Linkedin className="h-5 w-5 text-muted-foreground group-hover:text-[hsl(185_100%_60%)] transition-colors" />
-            </a>
-            <a
+              <Linkedin className="h-5 w-5" aria-hidden="true" />
+            </Link>
+            <Link
               href="mailto:azrealjames@gmail.com"
-              className="tech-icon group"
+              className="bg-background/80 p-3 rounded-full hover:bg-primary/10 transition-colors border border-border hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
               aria-label="Email Me"
             >
-              <Mail className="h-5 w-5 text-muted-foreground group-hover:text-[hsl(185_100%_60%)] transition-colors" />
-            </a>
+              <Mail className="h-5 w-5" aria-hidden="true" />
+            </Link>
           </div>
-        </div>
-      </div>
 
-      {/* Bottom Status Bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-10">
-        <div className="glass-panel border-t border-x-0 border-b-0 px-6 py-3">
-          <div className="max-w-7xl mx-auto flex items-center justify-between text-xs uppercase tracking-wider">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">System Status:</span>
-              <span className="neon-text-green">Optimal</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-4">
-              <span className="text-muted-foreground">james-duran.com</span>
-              <span className="text-muted-foreground">|</span>
-              <span className="text-muted-foreground">REV. 2024</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Connection:</span>
-              <span className="neon-text-green">Secure</span>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="#contact"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-11 rounded-md px-8 relative overflow-hidden group"
+            >
+              <span
+                className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 group-hover:animate-shimmer"
+                aria-hidden="true"
+              ></span>
+              <span className="relative z-10">Hire Me</span>
+            </a>
+
+            <a
+              href="#projects"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 border-primary/20 hover:border-primary/50 transition-colors"
+            >
+              View My Work
+            </a>
           </div>
         </div>
       </div>

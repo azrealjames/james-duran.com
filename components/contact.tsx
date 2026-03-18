@@ -2,7 +2,10 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Loader2, CheckCircle, AlertCircle, Send, Radio } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Loader2, CheckCircle, AlertCircle } from "lucide-react"
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -60,6 +63,7 @@ export function Contact() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }))
     }
@@ -67,6 +71,8 @@ export function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Reset status
     setFormStatus(null)
 
     if (formData._honeypot) {
@@ -78,6 +84,7 @@ export function Contact() {
       return
     }
 
+    // Validate form
     if (!validateForm()) {
       return
     }
@@ -93,6 +100,7 @@ export function Contact() {
         hiddenForm.action = formAction
         hiddenForm.style.display = "none"
 
+        // Add form data (excluding honeypot)
         for (const key in formData) {
           if (Object.prototype.hasOwnProperty.call(formData, key) && key !== "_honeypot") {
             const input = document.createElement("input")
@@ -131,6 +139,7 @@ export function Contact() {
           message: "Thank you for reaching out! I typically respond within 24 hours.",
         })
 
+        // Reset form
         setFormData({
           name: "",
           email: "",
@@ -155,202 +164,181 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className="py-20 relative" aria-labelledby="contact-heading">
-      {/* Background */}
-      <div className="absolute inset-0 cyber-grid opacity-20" aria-hidden="true" />
-      
-      <div className="container px-4 md:px-6 mx-auto relative z-10">
+    <section id="contact" className="py-20 bg-muted/30" aria-labelledby="contact-heading">
+      <div className="container px-4 md:px-6 mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="section-header">Initialize Connection</p>
-          <h2 id="contact-heading" className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">
-            <span className="neon-text">Connect</span> With Me
+          <h2 id="contact-heading" className="text-3xl font-bold tracking-tighter mb-4">
+            Get In Touch
           </h2>
-          <div className="w-20 h-0.5 bg-[hsl(185_100%_50%)] mx-auto mb-6 shadow-[0_0_10px_hsl(185_100%_50%)]" />
+          <div className="w-20 h-1 bg-primary mx-auto mb-6" aria-hidden="true"></div>
           <p className="text-muted-foreground">
-            Have a project in mind or want to discuss a potential collaboration? Send a transmission.
+            Have a project in mind or want to discuss a potential collaboration? I'd love to hear from you!
           </p>
         </div>
 
         <div className="max-w-2xl mx-auto">
-          <div className="glass-panel corner-accent rounded-xl p-8">
-            {/* Status Bar */}
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-[hsl(185_100%_50%/0.2)]">
-              <Radio className="h-4 w-4 text-[hsl(150_100%_50%)] animate-pulse" />
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">
-                Transmission Channel: <span className="text-[hsl(150_100%_60%)]">Open</span>
-              </span>
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6"
+            aria-label="Contact form"
+            action="https://formsubmit.co/azrealjames@gmail.com"
+            method="POST"
+          >
+            {/* Hidden fields for FormSubmit.co */}
+            <input type="hidden" name="_subject" value="Portfolio Contact Form Submission" />
+            <input type="hidden" name="_next" value={typeof window !== "undefined" ? window.location.href : ""} />
+            <input type="hidden" name="_captcha" value="true" />
+
+            <div className="sr-only" aria-hidden="true">
+              <label htmlFor="honeypot">Leave this field empty</label>
+              <Input
+                id="honeypot"
+                name="_honeypot"
+                value={formData._honeypot}
+                onChange={handleChange}
+                tabIndex={-1}
+                autoComplete="off"
+              />
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6"
-              aria-label="Contact form"
-            >
-              {/* Honeypot */}
-              <div className="sr-only" aria-hidden="true">
-                <label htmlFor="honeypot">Leave this field empty</label>
-                <input
-                  id="honeypot"
-                  name="_honeypot"
-                  value={formData._honeypot}
-                  onChange={handleChange}
-                  tabIndex={-1}
-                  autoComplete="off"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Identifier (Name)
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    aria-required="true"
-                    aria-invalid={!!errors.name}
-                    className={`w-full px-4 py-3 rounded-lg bg-[hsl(220_30%_10%)] border ${
-                      errors.name ? "border-red-500" : "border-[hsl(185_100%_50%/0.2)]"
-                    } text-foreground placeholder-muted-foreground focus:outline-none focus:border-[hsl(185_100%_50%/0.6)] focus:shadow-[0_0_10px_hsl(185_100%_50%/0.2)] transition-all`}
-                    placeholder="Enter your name"
-                    disabled={isSubmitting}
-                  />
-                  {errors.name && (
-                    <p className="text-red-400 text-xs flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.name}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Comm Link (Email)
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    aria-required="true"
-                    aria-invalid={!!errors.email}
-                    className={`w-full px-4 py-3 rounded-lg bg-[hsl(220_30%_10%)] border ${
-                      errors.email ? "border-red-500" : "border-[hsl(185_100%_50%/0.2)]"
-                    } text-foreground placeholder-muted-foreground focus:outline-none focus:border-[hsl(185_100%_50%/0.6)] focus:shadow-[0_0_10px_hsl(185_100%_50%/0.2)] transition-all`}
-                    placeholder="Enter your email"
-                    disabled={isSubmitting}
-                  />
-                  {errors.email && (
-                    <p className="text-red-400 text-xs flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label htmlFor="subject" className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Subject Line
+                <label htmlFor="name" className="text-sm font-medium sr-only">
+                  Your Name
                 </label>
-                <input
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
+                <Input
+                  id="name"
+                  placeholder="Your Name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
                   required
                   aria-required="true"
-                  aria-invalid={!!errors.subject}
-                  className={`w-full px-4 py-3 rounded-lg bg-[hsl(220_30%_10%)] border ${
-                    errors.subject ? "border-red-500" : "border-[hsl(185_100%_50%/0.2)]"
-                  } text-foreground placeholder-muted-foreground focus:outline-none focus:border-[hsl(185_100%_50%/0.6)] focus:shadow-[0_0_10px_hsl(185_100%_50%/0.2)] transition-all`}
-                  placeholder="What's this about?"
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? "name-error" : undefined}
+                  className={`focus:ring-2 focus:ring-primary ${errors.name ? "border-red-500" : ""}`}
                   disabled={isSubmitting}
                 />
-                {errors.subject && (
-                  <p className="text-red-400 text-xs flex items-center gap-1">
+                {errors.name && (
+                  <p id="name-error" className="text-red-500 text-sm flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {errors.subject}
+                    {errors.name}
                   </p>
                 )}
               </div>
-
               <div className="space-y-2">
-                <label htmlFor="message" className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Transmission Data (Message)
+                <label htmlFor="email" className="text-sm font-medium sr-only">
+                  Your Email
                 </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Your Email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleChange}
                   required
                   aria-required="true"
-                  aria-invalid={!!errors.message}
-                  rows={5}
-                  className={`w-full px-4 py-3 rounded-lg bg-[hsl(220_30%_10%)] border ${
-                    errors.message ? "border-red-500" : "border-[hsl(185_100%_50%/0.2)]"
-                  } text-foreground placeholder-muted-foreground focus:outline-none focus:border-[hsl(185_100%_50%/0.6)] focus:shadow-[0_0_10px_hsl(185_100%_50%/0.2)] transition-all resize-none`}
-                  placeholder="Enter your message (min. 10 characters)"
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  className={`focus:ring-2 focus:ring-primary ${errors.email ? "border-red-500" : ""}`}
                   disabled={isSubmitting}
                 />
-                {errors.message && (
-                  <p className="text-red-400 text-xs flex items-center gap-1">
+                {errors.email && (
+                  <p id="email-error" className="text-red-500 text-sm flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {errors.message}
+                    {errors.email}
                   </p>
                 )}
               </div>
+            </div>
 
-              <div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto cyber-button flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            <div className="space-y-2">
+              <label htmlFor="subject" className="text-sm font-medium sr-only">
+                Subject
+              </label>
+              <Input
+                id="subject"
+                placeholder="Subject"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                required
+                aria-required="true"
+                aria-invalid={!!errors.subject}
+                aria-describedby={errors.subject ? "subject-error" : undefined}
+                className={`focus:ring-2 focus:ring-primary ${errors.subject ? "border-red-500" : ""}`}
+                disabled={isSubmitting}
+              />
+              {errors.subject && (
+                <p id="subject-error" className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.subject}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="message" className="text-sm font-medium sr-only">
+                Your Message
+              </label>
+              <Textarea
+                id="message"
+                placeholder="Your Message (min. 10 characters)"
+                className={`min-h-[150px] focus:ring-2 focus:ring-primary ${errors.message ? "border-red-500" : ""}`}
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                required
+                aria-required="true"
+                aria-invalid={!!errors.message}
+                aria-describedby={errors.message ? "message-error" : undefined}
+                disabled={isSubmitting}
+              />
+              {errors.message && (
+                <p id="message-error" className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full sm:w-auto focus:ring-2 focus:ring-primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  "Send Message"
+                )}
+              </Button>
+
+              {formStatus && (
+                <div
+                  className={`mt-4 p-4 rounded-md flex items-start gap-3 ${formStatus.success ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
+                  role="alert"
+                  aria-live="polite"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Transmitting...
-                    </>
+                  {formStatus.success ? (
+                    <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                   ) : (
-                    <>
-                      <Send className="h-4 w-4" />
-                      Send Transmission
-                    </>
+                    <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                   )}
-                </button>
-
-                {formStatus && (
-                  <div
-                    className={`mt-6 p-4 rounded-lg flex items-start gap-3 ${
-                      formStatus.success
-                        ? "bg-[hsl(150_100%_50%/0.1)] border border-[hsl(150_100%_50%/0.3)]"
-                        : "bg-[hsl(0_100%_50%/0.1)] border border-[hsl(0_100%_50%/0.3)]"
-                    }`}
-                    role="alert"
-                    aria-live="polite"
-                  >
-                    {formStatus.success ? (
-                      <CheckCircle className="h-5 w-5 text-[hsl(150_100%_60%)] mt-0.5 flex-shrink-0" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
-                    )}
-                    <div>
-                      <p className={`font-medium ${formStatus.success ? "text-[hsl(150_100%_60%)]" : "text-red-400"}`}>
-                        {formStatus.success ? "Transmission Successful!" : "Transmission Failed"}
-                      </p>
-                      <p className="text-sm mt-1 text-muted-foreground">{formStatus.message}</p>
-                    </div>
+                  <div>
+                    <p className="font-medium">{formStatus.success ? "Message Sent!" : "Error"}</p>
+                    <p className="text-sm mt-1">{formStatus.message}</p>
                   </div>
-                )}
-              </div>
-            </form>
-          </div>
+                </div>
+              )}
+            </div>
+          </form>
         </div>
       </div>
     </section>
