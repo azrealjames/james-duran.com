@@ -165,21 +165,19 @@ export const printToPDF = (elementId: string, title = "James Duran - Resume") =>
         <div class="resume-container">
           ${content}
         </div>
-        <script>
-          // Auto-print when loaded
-          window.onload = function() {
-            setTimeout(() => {
-              window.print();
-              // Don't close the window immediately to allow the user to cancel if needed
-            }, 500);
-          };
-        </script>
       </body>
     </html>
   `)
 
   printWindow.document.close()
   printWindow.focus()
+
+  // Use addEventListener instead of inline script to trigger print
+  printWindow.addEventListener('load', () => {
+    setTimeout(() => {
+      printWindow.print()
+    }, 500)
+  })
 
   return true
 }
