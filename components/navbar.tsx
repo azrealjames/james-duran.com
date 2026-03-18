@@ -2,17 +2,27 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, Cpu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -29,9 +39,7 @@ export function Navbar() {
     }
 
     document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [isMenuOpen])
 
   // Handle escape key press
@@ -43,73 +51,64 @@ export function Navbar() {
     }
 
     document.addEventListener("keydown", handleEscKey)
-    return () => {
-      document.removeEventListener("keydown", handleEscKey)
-    }
+    return () => document.removeEventListener("keydown", handleEscKey)
   }, [isMenuOpen])
 
+  const navItems = [
+    { href: "#about", label: "Mission" },
+    { href: "#projects", label: "Portfolio Node" },
+    { href: "#skills", label: "Tech Nebula" },
+    { href: "#services", label: "Services" },
+    { href: "#resume", label: "Resume" },
+    { href: "#contact", label: "Connect" },
+  ]
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6 lg:px-8 xl:px-12 max-w-[2000px] mx-auto">
+    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+      scrolled ? "glass-panel border-b" : "bg-transparent"
+    }`}>
+      <div className="flex h-16 items-center justify-between px-4 md:px-6 lg:px-8 xl:px-12 max-w-[1400px] mx-auto">
         <Link
           href="/"
-          className="font-bold text-xl px-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-md"
+          className="flex items-center gap-2 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-md group"
         >
-          James Duran
+          <Cpu className="h-5 w-5 text-[hsl(185_100%_50%)] group-hover:animate-pulse" />
+          <span className="uppercase tracking-wider">
+            <span className="neon-text">James</span>{" "}
+            <span className="text-foreground">Duran</span>
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex gap-6" aria-label="Main navigation">
-          <Link
-            href="#about"
-            className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-md p-1"
-          >
-            About
-          </Link>
-          <Link
-            href="#skills"
-            className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-md p-1"
-          >
-            Skills
-          </Link>
-          <Link
-            href="#projects"
-            className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-md p-1"
-          >
-            Projects
-          </Link>
-          <Link
-            href="#services"
-            className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-md p-1"
-          >
-            Services
-          </Link>
-          <Link
-            href="#resume"
-            className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-md p-1"
-          >
-            Resume
-          </Link>
-          <Link
-            href="#contact"
-            className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-md p-1"
-          >
-            Contact
-          </Link>
+        <nav className="hidden md:flex gap-1" aria-label="Main navigation">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="relative px-4 py-2 text-sm uppercase tracking-wider text-muted-foreground hover:text-[hsl(185_100%_60%)] transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md group"
+            >
+              <span className="relative z-10">{item.label}</span>
+              <span className="absolute inset-0 bg-[hsl(185_100%_50%/0.1)] rounded-md opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Link>
+          ))}
         </nav>
 
         {/* Mobile Menu Button */}
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="md:hidden border border-[hsl(185_100%_50%/0.3)] hover:border-[hsl(185_100%_50%/0.6)] hover:bg-[hsl(185_100%_50%/0.1)]"
           onClick={toggleMenu}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-menu"
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           ref={buttonRef}
         >
-          {isMenuOpen ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
+          {isMenuOpen ? (
+            <X className="h-5 w-5 text-[hsl(185_100%_60%)]" aria-hidden="true" />
+          ) : (
+            <Menu className="h-5 w-5 text-[hsl(185_100%_60%)]" aria-hidden="true" />
+          )}
         </Button>
       </div>
 
@@ -117,55 +116,23 @@ export function Navbar() {
       {isMenuOpen && (
         <div
           id="mobile-menu"
-          className="px-4 md:px-6 lg:px-8 xl:px-12 md:hidden py-4"
+          className="glass-panel md:hidden py-4 px-4 border-t"
           ref={menuRef}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation menu"
         >
-          <nav className="flex flex-col space-y-4" aria-label="Mobile navigation">
-            <Link
-              href="#about"
-              className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-2"
-              onClick={toggleMenu}
-            >
-              About
-            </Link>
-            <Link
-              href="#skills"
-              className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-2"
-              onClick={toggleMenu}
-            >
-              Skills
-            </Link>
-            <Link
-              href="#projects"
-              className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-2"
-              onClick={toggleMenu}
-            >
-              Projects
-            </Link>
-            <Link
-              href="#services"
-              className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-2"
-              onClick={toggleMenu}
-            >
-              Services
-            </Link>
-            <Link
-              href="#resume"
-              className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-2"
-              onClick={toggleMenu}
-            >
-              Resume
-            </Link>
-            <Link
-              href="#contact"
-              className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-2"
-              onClick={toggleMenu}
-            >
-              Contact
-            </Link>
+          <nav className="flex flex-col space-y-2" aria-label="Mobile navigation">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="px-4 py-3 text-sm uppercase tracking-wider text-muted-foreground hover:text-[hsl(185_100%_60%)] hover:bg-[hsl(185_100%_50%/0.1)] transition-colors rounded-md"
+                onClick={toggleMenu}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
       )}
