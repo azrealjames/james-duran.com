@@ -2,7 +2,6 @@ import type React from "react"
 import "@/app/globals.css"
 import "@/app/print.css"
 import { Inter } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark" style={{ scrollBehavior: "smooth" }}>
+    <html lang="en" className="dark" style={{ scrollBehavior: "smooth" }}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#000000" />
@@ -30,9 +29,7 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   )
